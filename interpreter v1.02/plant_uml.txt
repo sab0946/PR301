@@ -1,0 +1,15 @@
+//plant UMLdiagram
+
+
+@startuml
+class ClassBuilder {
+  name : string
+  createAttribute()
+  createMethods()
+}
+class ClassBuilder2 {
+  name : string
+  createAttribute()
+  createMethods()
+}
+@enduml
