@@ -1,0 +1,4 @@
+class ClassBuilder
+    def __init__(self):
+        self.  name : string
+        def   createAttribute()        def   createMethods()
