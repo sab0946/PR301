@@ -1,0 +1,25 @@
+@startuml
+class ClassBuilder {
+  name : string
+  createAttribute()
+  createMethods()
+}
+
+class ClassBuilder2 {
+  name2 : string
+  createAttribute2()
+  createMethods2()
+}
+
+class ClassBuilder3 {
+  name3 : string
+  createAttribute3()
+  createMethods3()
+}
+
+class ClassBuilder4 {
+  name4 : string
+  createAttribute4()
+  createMethods4()
+}
+@enduml

@@ -1,0 +1,11 @@
+@startuml
+class ClassBuilder2 {
+  name2 : string
+  name3 : number
+  name4 : list
+  name5 : tuple
+  name6 : another return
+  createAttribute2(new_attribute) newAttribute
+  createMethods2()
+}
+@enduml
