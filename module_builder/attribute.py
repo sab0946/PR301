@@ -13,9 +13,19 @@ class Attribute:
         self.type = self.find_type(new_type)
 
     def __str__(self):
-        return f"        self.{self.name} -> {self.type} =  # ToDo\n"
+        if "str" in self.type:
+            return f"        self.{self.name}: {self.type} = \"\"  # ToDo\n"
+        elif "int" in self.type:
+            return f"        self.{self.name}: {self.type} = 1  # ToDo\n"
+        elif "list" in self.type:
+            return f"        self.{self.name}: {self.type} = []  # ToDo\n"
+        elif "tuple" in self.type:
+            return f"        self.{self.name}: {self.type} = ()  # ToDo\n"
+        else:
+            return f"        self.{self.name} = None  # ToDo\n"
 
-    def find_type(self, new_type):
+    @staticmethod
+    def find_type(new_type):
         if "string" in new_type:
             return "str"
         elif "number" in new_type:

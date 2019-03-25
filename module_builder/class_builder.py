@@ -10,28 +10,30 @@ class ClassBuilder:
     and relationships
     >>> a = ClassBuilder()
     >>> a.build_class("ClassName", ["attribute1: string"], \
-        ["Method1(input):integer"], ("extends", "Class2"))
+        ["Method1(input):integer"], [("comp", "Class2")])
     >>> print(a.name)
     ClassName
     >>> print(a.attributes)
     ['attribute1: string']
     >>> print(a.methods)
     ['Method1(input):integer']
-    >>> print(a.relationships)
-    ('extends', 'Class2')
     >>> print(len(a.all_my_attributes))
     1
     >>> print(len(a.all_my_methods))
     1
-    >>> print(len(a.all_my_parent_classes))
+    >>> print(len(a.all_my_composite_classes))
     1
+    >>> print(a.all_my_composite_classes[0])
+    class2s
+    >>> print(a.relationships)
+    [('comp', 'Class2')]
     """
 
     def __init__(self):
         self.name = ""
         self.attributes = ""
         self.methods = ""
-        self.relationships = ""
+        self.relationships = []
         self.all_my_attributes = []
         self.all_my_methods = []
         self.all_my_parent_classes = []
@@ -87,11 +89,12 @@ class ClassBuilder:
             string += f"{x}"
         if len(self.all_my_composite_classes) > 0:
             for a_class in self.all_my_composite_classes:
-                string += f"   self.all_my_{a_class} = []\n"
+                string += f"        self.all_my_{a_class} = []\n"
         string += "\n"
         for x in self.all_my_methods:
             string += f"{x}"
         return string
+
 
 if __name__ == "__main__":
     from doctest import testmod

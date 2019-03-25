@@ -2,21 +2,30 @@ import re
 from module_builder.class_builder import ClassBuilder
 from module_builder.module import Module
 from module_builder.shelver import Shelver
+from db_writer import DbWriter
 
 
 class Interpreter:
 
     """interpret the plant UML file and create a list of classes
     >>> a = Interpreter()
-    >>> a.add_file('h:/plant_uml_complex.txt', 'test_module')
+    >>> a.add_file('c:/class_diagram_plantUML', 'test_module')
+
     >>> print(a.my_file)
-    h:/plant_uml_complex.txt
+    c:/class_diagram_plantUML
     >>> print(len(a.all_my_modules))
     1
-    >>> print(len(a.all_my_classes))
-    4
-    >>> print(a.all_my_classes[1].name)
-    Attribute
+    >>> print(len(a.all_my_classbuilders))
+    6
+    >>> print(a.all_my_classbuilders[1].name)
+    Module
+    >>> print(len(a.all_my_errors))
+    0
+    >>> print(a.all_my_modules[0].module_name)
+    test_module
+    >>> a_class = a.all_my_classbuilders[1]
+    >>> print(len(a_class.all_my_attributes))
+    1
     """
 
     language = "Plant UML"
@@ -25,15 +34,17 @@ class Interpreter:
         self.my_file = ""
         self.my_shelf = None
         self.my_class_content = []
-        self.all_my_classes = []
+        self.my_relationship_content = ""
+        self.all_my_classbuilders = []
         self.all_my_modules = []
         self.all_my_errors = []
+        self.my_db = None
 
     def add_file(self, file_name, new_module_name):
         self.my_file = file_name
         self.read_file()
         self.find_classes()
-        self.add_module(new_module_name, self.all_my_classes)
+        self.add_module(new_module_name, self.all_my_classbuilders)
 
     def read_file(self):
         try:
@@ -49,26 +60,28 @@ class Interpreter:
             self.all_my_errors.append(e)
             print("Error - File not found")
 
-    def find_relationship(self, relationship, class_name):
+    @staticmethod
+    def find_relationship(relationship, class_name):
         if relationship.startswith(class_name):
-            pass
+            if len(relationship.split(" ")) < 2:
+                pass
+            if re.search(r"\*--", relationship):
+                com_class = relationship.split(" ")[4]
+                return tuple(("comp", com_class))
+            if re.search(r"--", relationship):
+                as_class = relationship.split(" ")[4]
+                return tuple(("assos", as_class))
         elif relationship.endswith(class_name):
             if len(relationship.split(" ")) < 2:
                 pass
             if re.search(r"<\|--", relationship):
                 ext_class = relationship.split(" ")[0]
                 return tuple(("extends", ext_class))
-            if re.search(r"\*--", relationship):
-                com_class = relationship.split(" ")[2]
-                return tuple(("comp", com_class))
-            if re.search(r"--", relationship):
-                as_class = relationship.split(" ")[2]
-                return tuple(("assos", as_class))
 
     def add_class(self, class_name, attributes, methods, relationships):
         new_class = ClassBuilder()
         new_class.build_class(class_name, attributes, methods, relationships)
-        self.all_my_classes.append(new_class)
+        self.all_my_classbuilders.append(new_class)
 
     def find_classes(self):
         for class_info in self.my_class_content:
@@ -111,6 +124,12 @@ class Interpreter:
         for a_module in self.all_my_modules:
             shelf.shelve_modules(a_module)
         self.my_shelf = shelf.my_shelf_file
+
+    def create_db(self):
+        db = DbWriter()
+        for a_module in self.all_my_modules:
+            db.write_db(a_module)
+        self.my_db = db
 
 
 if __name__ == "__main__":

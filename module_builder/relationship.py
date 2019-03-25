@@ -6,10 +6,15 @@ class Relationship:
     Class2
     >>> print(a.type)
     extends
+    >>> a = Relationship(('comp', 'Class3'))
+    >>> print(a.name)
+    Class3
+    >>> print(a.type)
+    comp
     """
 
     def __init__(self, new_type):
-        self.name = new_type[1]
+        self.name = new_type[1].lower()
         self.type = new_type[0]
 
     def __str__(self):

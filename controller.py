@@ -1,6 +1,8 @@
 from module_builder.interpreter import Interpreter
 import sys
 import cmd
+from plantweb.render import render_file
+
 
 class Main(cmd.Cmd):
     """Plant UML to Python Interpreter"""
@@ -10,6 +12,7 @@ class Main(cmd.Cmd):
     root_directory = None
     write_folder = None
     source_file = None
+    db = None
 
     def cmdloop(self, intro="PlantUML to Python Convertor"):
         return cmd.Cmd.cmdloop(self, intro)
@@ -28,11 +31,11 @@ class Main(cmd.Cmd):
         elif self.source_file is None:
             print("Please enter the source file : source xxxx")
         else:
-            x = Interpreter()
-            x.add_file(self.source_file, self.write_folder)
-            x.write_modules()
-            if len(x.all_my_errors) > 0:
-                for an_error in x.all_my_errors:
+            uml = Interpreter()
+            uml.add_file(self.source_file, self.write_folder)
+            uml.write_modules()
+            if len(uml.all_my_errors) > 0:
+                for an_error in uml.all_my_errors:
                     print(an_error)
             print("Interpreting complete")
         
@@ -80,20 +83,59 @@ class Main(cmd.Cmd):
             print(e)
 
     def do_i_shelve(self, line):
-        x = Interpreter()
-        x.add_file(self.source_file, self.write_folder)
-        if self.root_directory:
-            x.shelve_modules(self.root_directory + "/" + line)
+        if self.write_folder is None:
+            print("Please enter the directory to write files to : write_folder xxxx")
+        elif self.source_file is None:
+            print("Please enter the source file : source xxxx")
         else:
-            x.shelve_modules(line)
-        print(f"modules shelved to {line}")
+            uml_shelf = Interpreter()
+            uml_shelf.add_file(self.source_file, self.write_folder)
+            if self.root_directory:
+                uml_shelf.shelve_modules(self.root_directory + "/" + line)
+            else:
+                uml_shelf.shelve_modules(line)
+            print(f"modules shelved to {line}")
+
+    def do_make_db(self, line):
+        if self.write_folder is None:
+            print("Please enter the directory to write files to : write_folder xxxx")
+        elif self.source_file is None:
+            print("Please enter the source file : source xxxx")
+        else:
+            uml_db = Interpreter()
+            uml_db.add_file(self.source_file, self.write_folder)
+            self.db = uml_db.create_db()
+
+    def do_write_db(self, line):
+        if self.db:
+            self.db.read_db()
+        else:
+            print("please write to DB first (**make_db**)")
 
     def do_quit(self, line):
         print("Closing Down")
         return True
 
-    def postloop(self):
-        print
+    def do_print_uml(self, line):
+        with open(self.source_file, "rt") as my_file:
+            contents = my_file.read()
+        in_file = self.root_directory + "plant_uml.png"
+        with open(in_file, 'wb') as fd:
+            fd.write(contents.encode('utf-8'))
+        print('==> INPUT FILE:')
+        print(in_file)
+        outfile = render_file(
+            in_file,
+            renderopts={
+                'engine': 'plantuml',
+                'format': 'png'
+            },
+            cacheopts={
+                'use_cache': False
+            }
+        )
+        print('==> OUTPUT FILE:')
+        print(outfile)
         
     def help_interpret(self):
         print("Translates your SOURCE plantUML file to a python file")
@@ -117,20 +159,37 @@ class Main(cmd.Cmd):
     def help_check_file(self):
         print("Use this function to check if your file is suitable for translation")
 
+    def help_print_uml(self):
+        print("Print your source PlantUML file to a PNG")
+
+    def help_i_shelve(self):
+        print("Store the class data in a \'shelf\' for later use")
+
+    def help_make_db(self):
+        print("Save the program data to a database")
+
+    def help_write_db(self):
+        print("Write the data saved in the database")
+
     def help_quit(self):
         print("Quit the program")
 
-    def help_help(self):
-        print("For more information on a specific command, type HELP command-name"
-              "**PlantUML to Python Interpreter**"
-              "**Will read PlantUML from a text file and write to .py files"
-              "============================================================="
-              "root         Change the rot directory"
-              "source       Change the source file"
-              "write_folder The folder in which files are written"
-              "check_file   Check your source file is a valid input"
-              "interpret    Convert your plantUML to .py files"
-              "quit         quit")
+    def help_cmd(self):
+        print("""
+            ***Plant UML to Python Interpreter***
+            
+            check_file      Checks that the surce file is a text file and that it contains plantUML
+            i_shelve        Shelves all the classes in the module as objects
+            make_db         Write the module to a database
+            write_db        Prints the information in the database
+            source          Sets the source file to interpret
+            write_folder    Sets the folder to write the module to
+            interpret       Reads the source file, and writes each class to a seperate Python file
+            print_uml       Prints a png file of the PlantUML diagram from the source file
+            root            Change the root directory for the source file and written files
+            quit            Quit the program
+            """)
+
 
 if __name__ == '__main__':
 
